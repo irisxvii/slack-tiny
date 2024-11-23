@@ -20,7 +20,8 @@ def message(payLoad):
     user_id = event.get('user')
     text = event.get('text')
 
-    client.chat_postMessage(channel=channel_id, text=text)
+    if BOT_ID != user_id:
+        client.chat_postMessage(channel=channel_id, text=text)
 
 if __name__ == "__main__":
     app.run(debug=True)
