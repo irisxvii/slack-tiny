@@ -52,9 +52,9 @@ class WelcomeMessage:
         }
     
     def _get_reaction_task(self):
-        checkmark = ':white_check_mark:'
+        checkmark = ':biting_lip:'
         if not self.completed:
-            checkmark =':biting_lip:'
+            checkmark =':white_circle:'
         
         text = f'*react to this message* {checkmark}'
 
@@ -86,6 +86,22 @@ def message(payLoad):
 
         if text.lower() == 'start':
             send_welcome_message(f'@{user_id}', user_id)
+
+@slack_event_adapter.on('reaction_added')
+def reaction(payLoad):
+    event = payLoad.get('event',{})
+    channel_id = event.get('item', {}).get('channel')
+    user_id = event.get('user')
+
+    if f'@{user_id}' not in welcome_messages:
+        return 
+    
+    welcome = welcome_messages[f'@{user_id}'][user_id]
+    welcome.completed = True
+    welcome.channel = channel_id
+    messgae = welcome.get_message()
+    updated_message = client.chat_update(**welcome.get_message())
+    welcome.timestamp = updated_message['ts']
 
 @app.route('/message-count', methods=['POST'])
 def message_count():
