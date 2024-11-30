@@ -54,9 +54,9 @@ class WelcomeMessage:
     def _get_reaction_task(self):
         checkmark = ':white_check_mark:'
         if not self.completed:
-            checkmark =':white_large_square:'
+            checkmark =':biting_lip:'
         
-        text = f'{checkmark} *react to this message*'
+        text = f'*react to this message* {checkmark}'
 
         return {'type': 'section', 'text':{'type': 'mrkdwn', 'text': text}}
     
@@ -85,7 +85,7 @@ def message(payLoad):
         #client.chat_postMessage(channel=channel_id, text=text)
 
         if text.lower() == 'start':
-            send_welcome_message(channel_id, user_id)
+            send_welcome_message(f'@{user_id}', user_id)
 
 @app.route('/message-count', methods=['POST'])
 def message_count():
