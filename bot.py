@@ -16,6 +16,7 @@ BOT_ID = client.api_call('auth.test')['user_id']
 
 message_counts = {}
 welcome_messages = {}
+pets = {}
 
 class WelcomeMessage:
     START_TEXT = {
@@ -111,6 +112,44 @@ def message_count():
     message_count=message_counts.get(user_id,0)
     client.chat_postMessage(channel=channel_id, text=f"got it young man. message count: {message_count}")
     return Response(), 200   
+
+class Pet:
+    def __init__(self, name, species, owner):
+        self.name = name
+        self.species = species
+        self.owner = owner
+        self.hp = 100
+        self.attack = 10
+        self.defense = 5
+        self.xp = 0
+        self.level = 1
+
+    def level_up(self):
+        self.level += 1
+        self.hp += 20
+        self.attack += 5
+        self.defense += 3
+        print(f"{self.name} leveled up to {self.level}!")
+
+@slack_event_adapter.on('message')
+def message(payLoad):
+    event = payLoad.get('event',{})
+    channel_id = event.get('channel')
+    user_id = event.get('user')
+    text = event.get('text')
+
+    if user_id and BOT_ID != user_id:
+        if text.lower().startswith("!adopt"):
+            pet_name = text.split(' ',1)[1] if len(text.split())>1 else "Fluffy"
+            species = "Axolot1"
+
+            pet = Pet(pet_name, species, user_id)
+            pets[user_id] = pet
+            response_text = (f"Yayy! You've adopted a pet ˗ˏˋ 𓅰ˎˊ˗ \n"
+                             f"Name: {pet.name}\nSpecies: {pet.species}\n"
+                             f"Stats: HP: {pet.hp} | ATK: {pet.attack} | DEF: {pet.defense}\n"
+                             f"Take care of my lil boy please")
+    client.chat_postMessage(channel=channel_id, text=response_text)
 
 if __name__ == "__main__":
     app.run(debug=True)
